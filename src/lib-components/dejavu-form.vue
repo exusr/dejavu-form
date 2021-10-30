@@ -285,17 +285,7 @@
 		top: -2em;
 		opacity: 0%;
 	}
-	/* fonts */
-	@font-face {
-		font-family: "SourceCodePro";
-		font-style: normal;
-		font-weight: 400;
-		src: url("../lib-assets/fonts/source-code-pro/SourceCodePro-Regular.ttf");
-	}
 	/* style */
-	* {
-		font-family: "SourceCodePro";
-	}
 	label {
 		min-width: 100%;
 		display: block;
