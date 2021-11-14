@@ -78,6 +78,7 @@
 	const MIN_ERROR 		= 2; const MIN_ERROR_MSG 		= "cannot be minor than";
 	const MAX_ERROR 		= 3; const MAX_ERROR_MSG 		= "cannot be greater than";
 	const EXTENSION_ERROR	= 4; const EXTENSION_ERROR_MSG 	= "extensions not in";
+	const ESCLUDE_ERROR		= 5; const ESCLUDE_ERROR_MSG 	= "cannot contain";
 
 	export default /*#__PURE__*/defineComponent({
 		name: 'DejavuForm', // vue component name
@@ -158,6 +159,8 @@
 						return "max"
 					} else if (index === EXTENSION_ERROR) {
 						return "extensions"
+					} else if (index === ESCLUDE_ERROR) {
+						return "esclude"
 					}
 					return null
 				}
@@ -184,6 +187,14 @@
 							if ( rule === "match" && isString(input_value) ) {
 								if ( input_value.match(rule_value) === null ) {
 									error = MATCH_ERROR; message = `${input.name} ${MATCH_ERROR_MSG} ${rule_value}`;
+								}
+							}
+
+							/* esclude check */
+							if ( rule === "esclude" && isString(input_value) ) {
+								console.log(input_value.includes(rule_value), input_value)
+								if (input_value.includes(rule_value)) {
+									error = ESCLUDE_ERROR; message = `${input.name} ${ESCLUDE_ERROR_MSG} ${rule_value}`;
 								}
 							}
 
@@ -220,7 +231,7 @@
 							}
 						}
 					}
-				})
+				});
 				invalid_inputs.length > 0 ? this.showErrors(invalid_inputs) : this.sendForm();
 			},
 			/* display errors on invalid inputs */
