@@ -70,6 +70,7 @@
 </template>
 
 <script>
+	/* eslint-disable */
 	import { defineComponent } from 'vue';
 
 	const REQUIRED_ERROR 	= 0; const REQUIRED_ERROR_MSG 	= "is required";
@@ -130,7 +131,7 @@
             },
 			/* check if value is empty */
 			isEmpty(v) { 
-				return ( v === undefined || v === "" || v === null ) 
+				return ( v === undefined || v === null || v === "" ) 
 			}
 			,
 			/* validate and send form data */
@@ -170,11 +171,11 @@
 
 							/* required check */
 							if ( 
-								(rule === "required" && rule_value === true) &&
+								(rule === "required" && rule_value === true) && (
 								this.isEmpty(input_value) ||
 								( isArray(input_value) && input_value.length == 0 ) || 
 								( isObject(input_value) && input_value.length == 0 ) ||
-								( isFileList(input_value) && input_value.length == 0 )
+								( isFileList(input_value) && input_value.length == 0 ))
 							) {
 								error = REQUIRED_ERROR; message = `${input.name} ${REQUIRED_ERROR_MSG}`;
 							}
@@ -245,26 +246,38 @@
 			},
 			/* send form */
 			async sendForm() {
-				let endpoint = this.content.action ? this.content.action : () => {  
-					console.warn('DejavuForm doesn\'t have an action setted'); 
-					return '#'; 
+				process = true;
+				/* check if parent has method */
+				/* if method exists before send await response, if true continue else don't send */
+				if (this.$parent.formBefore !== undefined) {
+					process = await this.$parent.formBefore();
 				}
-				let body = this.getContent();
-				let request_body = new Object();
+				if (process === true) {
+					let endpoint = this.content.action ? this.content.action : () => {  
+						console.warn('DejavuForm doesn\'t have an action setted'); 
+						return '#'; 
+					}
+					let body = this.getContent();
+					let request_body = new Object();
 
-				Object.assign( request_body, { 'method' : this.content.method ? this.content.method : 'GET' } );
-				Object.assign( request_body, { 'mode' : this.content.mode ? this.content.mode : 'cors' } );
-				Object.assign( request_body, JSON.stringify({ 'headers' : { 'Content-Type': this.content.type } }) );
-				Object.assign( request_body, { 'cache' : this.content.cache ? this.content.cache : 'default' } );
-				Object.assign( request_body, { 'credentials' : this.content.credentials ? this.content.credentials : 'same-origin' } );
-				Object.assign( request_body, { 'redirect' : this.content.redirect ? this.content.redirect : 'follow' } );
-				Object.assign( request_body, { 'referrerPolicy' : this.content.referrerPolicy ? this.content.referrerPolicy : 'no-referrer-when-downgrade' } );
-				Object.assign( request_body, { 'body' : body } );
+					let headers = { 'Content-Type': this.content.type };
+					if (this.content.xsrf !== undefined) {
+						Object.assign( headers, { [this.content.xsrf.key] : this.content.xsrf.value } );
+					}
+					Object.assign( request_body, JSON.stringify({ 'headers' : headers }) );
+					Object.assign( request_body, { 'method' : this.content.method ? this.content.method : 'GET' } );
+					Object.assign( request_body, { 'mode' : this.content.mode ? this.content.mode : 'cors' } );
+					Object.assign( request_body, { 'cache' : this.content.cache ? this.content.cache : 'default' } );
+					Object.assign( request_body, { 'credentials' : this.content.credentials ? this.content.credentials : 'same-origin' } );
+					Object.assign( request_body, { 'redirect' : this.content.redirect ? this.content.redirect : 'follow' } );
+					Object.assign( request_body, { 'referrerPolicy' : this.content.referrerPolicy ? this.content.referrerPolicy : 'no-referrer-when-downgrade' } );
+					Object.assign( request_body, { 'body' : body } );
 
-				let request = new Request(endpoint, request_body);
-				
-				const response = await fetch(request)
-				this.$parent.formCallback( response );
+					let request = new Request(endpoint, request_body);
+
+					const response = await fetch(request)
+					this.$parent.formCallback( response );
+				}
 			}
 		}
 	});
